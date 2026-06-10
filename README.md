@@ -1,122 +1,139 @@
 # Engineering Calculator
 
-An interactive command-line calculator designed for engineers, with built-in support for SI prefix notation and decibel (dB) conversions.
+A calculator designed for engineers, in your terminal.
 
 ## Features
 
-- **Standard math** — arithmetic operators, power (`^` or `**`), modulo (`%`)
-- **SI prefix input/output** — type `4.7k` instead of `4700`; results are automatically displayed with SI prefixes
-- **dB input** — write `20dB` or `20dBv` directly in expressions
-- **dB output** — append `-> dBp` or `-> dBv` to any expression to see the result in decibels
-- **Rich function library** — trig, inverse trig, hyperbolic, logarithms, rounding, combinatorics, and more
-- **Variable assignment** — store intermediate results (e.g., `x = 4.7k * 2`)
-- **`ans` variable** — automatically holds the last computed result
+- **SI prefix I/O** — `4.7k * 2` → `9.4k`; results auto-formatted with SI suffixes (`f p n u m k M G T`)
+- **Variable assignment** — `x = 4.7k * 2`; `ans` always holds the last result
+- **dB input & conversions** — `20dB`, `20dBv`; append `-> dBp` or `-> dBv` to convert
+- **Bitwise operations** — `<<` `>>` `&` `|` `~` (integer, unsigned)
+- **Hex & binary I/O** — `0xFF` / `x34`; `0b1101` / `b1101`; append `-> hex` or `-> bin`
+- **Byte & bit units** — `KB`, `KiB`, `Kb`, `Kib`, etc.; mixed arithmetic (1 byte = 8 bits); convert with `-> MB`, `-> Kib`, etc.
+- **Rich math library** — trig (radians & degrees), hyperbolic, logs, combinatorics, rounding, and more
 - **Command history** — via `readline` (Unix/macOS) or `pyreadline3` (Windows)
 
-## Requirements
-
-Install dependencies using:
+## Setup
 
 ```bash
+# Clone using Git Bash 
+git clone <repo>
+cd <repo>
+
+# Set up virtual environment
+python -m venv .venv
+
+# Install dependencies
 pip install -r requirements.txt
-```
 
-## Usage
-
-```bash
+# Run the calculator!
 python calc.py
 ```
 
-At the `>` prompt, type any expression and press Enter.
+**Optional alias** — add to `~/.bashrc` for access from anywhere:
+```bash
+calc_folder="${HOME}/Documents/CLI-Calculator"
+alias cli-calc="${calc_folder}/.venv/Scripts/python ${calc_folder}/calc.py"
+```
+
+Avoid placing the folder in a path with spaces, as this makes it trickier to access using a terminal.
+
+## Highlights
+
+### SI Prefixes
+```
+> 3.3u * 47k             # 3.3 µF × 47 kΩ
+  = 155.1m
+> 1.5G / 1M
+  = 1.5k
+> ans * 2u
+  = 3m
+```
+
+Valid SI prefixes range from femto (`f`) to Tera (`T`). Notation is case-insensitive, except for milli/Mega (`m`/`M`).
+
+
+### Hex & Binary
+```
+> 0xFD & 0x0F -> hex
+  = 0xD  (13)
+> ans -> bin
+  = 0b1101  (13)          # -> hex / -> bin are display-only; ans unchanged
+> 0xABb                   # Hex is case-insensitive — b is a hex digit here
+  = 2.747k
+```
+
+### Bitwise
+```
+> 5 << 3                  # 5 × 2³
+  = 40
+> ~0 & 0xFF
+  = 255
+```
+
+### Byte & Bit Units
+Stored internally as bytes (1 byte = 8 bits); bytes and bits mix freely.
 
 ```
-Engineering Calculator  (type 'help' for info, Ctrl+C / 'quit' to exit)
+> 5KiB                    # 5120 bytes
+  = 5.12k B  (40960 bits)
+> 5b + 3b
+  = 1 B  (8 bits)
+> 8MB -> Mb
+  = 64 Mb
+> 1GiB -> MB
+  = 1073.742 MB
+```
 
-> 4.7k * 2
-  = 9.4k
-> 100 -> dBp
-  = 20 dBp  (100 linear)
-> 20dBv
+Decimal (KB, MB…) = powers of 1000. Binary (KiB, MiB…) = powers of 1024. See [this page](https://ss64.com/tools/convert.html) for more detail.
+
+### dB
+```
+> 20dB                    # Power ratio: 10^(20/10)
+  = 100
+> 20dBv                   # Voltage ratio: 10^(20/20)
   = 10
-> x = 3.3u * 47k
-  x = 155.1m
-> ans + 1
-  = 1.155
-> quit
-Bye!
+> ans * 2k -> dBp
+  = 43.01 dBp  (20k linear)
+> dB(20dB * 10k) / 2      # Using functions to apply dB inline. (Output is printed without units)
+  = 60
 ```
 
-## SI Prefixes
-
-| Suffix | Multiplier |
-|--------|-----------|
-| `f`    | 1e-15     |
-| `p`    | 1e-12     |
-| `n`    | 1e-9      |
-| `u`    | 1e-6      |
-| `m`    | 1e-3      |
-| `k`    | 1e3       |
-| `M`    | 1e6       |
-| `G`    | 1e9       |
-| `T`    | 1e12      |
-
-Suffixes are case-sensitive where it matters (`m` = milli, `M` = mega).
-
-## dB Support
-
-### Input
-| Syntax  | Interpretation                          |
-|---------|-----------------------------------------|
-| `20dB`  | Power ratio — `10^(20/10)` = 100        |
-| `20dBp` | Explicit power ratio (same as above)    |
-| `20dBv` | Voltage/field ratio — `10^(20/20)` = 10 |
-| `20dBa` | Amplitude alias for `dBv`               |
-
-### Output
-Append `-> dBp` or `-> dBv` to any expression:
+### Variables
 ```
-> 100 -> dBp
-  = 20 dBp  (100 linear)
-> 10 -> dBv
-  = 20 dBv  (10 linear)
-> 4.7k * 2 -> dBp
-  = 39.731 dBp  (9.4k linear)
+> r1 = 3.3k
+> r2 = 4.7k
+> r1 * r2
+  = 15.51M
+> ans -> dBp
+  = 71.907 dBp
 ```
 
-### Helper Functions
-| Function      | Description                         |
-|---------------|-------------------------------------|
-| `dBp(x)`      | Linear → power dB (returns number)  |
-| `dBv(x)`      | Linear → voltage/field dB           |
+## Reference
 
-To convert dB back to linear, use the `dB` input suffix directly in your expression (e.g. `20dBv`, `6dBp`).
+### Functions
+| Category       | Functions |
+|----------------|-----------|
+| Powers/Roots   | `sqrt`, `exp`, `pow` |
+| Logarithms     | `ln`, `log` (base-10), `log(x, base)`, `log2`, `log10` |
+| Trig (radians) | `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2` |
+| Trig (degrees) | `sind`, `cosd`, `tand` |
+| Angle convert  | `rad`, `deg` |
+| Hyperbolic     | `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh` |
+| Rounding       | `ceil`, `floor`, `round`, `abs` |
+| Combinatorics  | `factorial` / `!`, `comb` / `nCk`, `perm` / `nPk` |
+| Type casting   | `int`, `float` |
+| dB helpers     | `dBp(x)` / `dB(x)`, `dBv(x)` |
+| Misc           | `min`, `max`, `sum` |
 
-## Functions Reference
+Constants: `pi`, `e`, `tau`
 
-| Category        | Functions                                                                 |
-|-----------------|---------------------------------------------------------------------------|
-| Powers/Roots    | `sqrt`, `exp`, `pow`                                                      |
-| Logarithms      | `ln`, `log` (base-10), `log(x, base)`, `log2`, `log10`                   |
-| Trig (radians)  | `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`                      |
-| Trig (degrees)  | `sind`, `cosd`, `tand`                                                    |
-| Angle convert   | `rad`, `deg`                                                              |
-| Hyperbolic      | `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`                         |
-| Rounding        | `ceil`, `floor`, `round`, `abs`                                           |
-| Combinatorics   | `factorial`, `comb`, `perm`                                               |
-| Misc            | `min`, `max`, `sum`                                                       |
+### Output Conversions (`->`)
+| Syntax | Effect | `ans` updated? |
+|--------|--------|:-:|
+| `-> dBp` / `-> dBv` | Convert to dB | ✓ |
+| `-> KB`, `-> MiB`, `-> Mb`, … | Convert byte/bit unit | ✓ |
+| `-> hex` | Display as hex | ✗ |
+| `-> bin` | Display as binary | ✗ |
 
-## Constants
-
-| Name         | Value          |
-|--------------|----------------|
-| `pi` / `PI`  | π ≈ 3.14159…   |
-| `e` / `E`    | e ≈ 2.71828…   |
-| `tau`        | τ = 2π         |
-
-## Commands
-
-| Command        | Action           |
-|----------------|------------------|
-| `help`         | Show help text   |
-| `quit` / `exit` / `q` | Exit the calculator |
-| Ctrl+C / Ctrl+D | Exit             |
+Type `help` to show help, `quit` / `q` to exit.
