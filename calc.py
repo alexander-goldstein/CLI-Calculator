@@ -574,8 +574,14 @@ Engineering Calculator -- type an expression, press Enter.
 """
 
 
+def _set_title(title: str) -> None:
+    """Set the terminal window title via OSC escape sequence."""
+    print(f"\033]0;{title}\007", end="", flush=True)
+
+
 def main():
     env = _build_env()
+    _set_title("cli-calc")
     print("Engineering Calculator  (type 'help' for info, Ctrl+C / 'quit' to exit)")
     print()
 
@@ -583,12 +589,14 @@ def main():
         try:
             raw = input("> ").strip()
         except (EOFError, KeyboardInterrupt):
+            _set_title("")
             print("\nBye!")
             break
 
         if not raw:
             continue
         if raw.lower() in ("quit", "exit", "q"):
+            _set_title("")
             print("Bye!")
             break
         if raw.lower() == "help":
